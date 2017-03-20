@@ -1044,7 +1044,7 @@ defmodule Wallaby.Browser do
   end
 
   defp execute_query(parent, query) do
-    retry fn ->
+    {time, ret} = :timer.tc fn -> retry fn ->
       try do
         with {:ok, query}  <- Query.validate(query),
              {method, selector} <- Query.compile(query),
@@ -1058,6 +1058,9 @@ defmodule Wallaby.Browser do
           {:error, :stale_reference}
       end
     end
+    end
+    IO.puts "Execution time #{time / 1000}"
+    ret
   end
 
   defp max_time_exceeded?(start_time) do

@@ -53,12 +53,16 @@ defmodule Wallaby.Phantom.Driver do
   # @spec find_elements(Locator.t, query) :: t
 
   def find_elements(parent, locator) do
-    check_logs! parent, fn ->
-      with {:ok, resp} <- request(:post, parent.url <> "/elements", to_params(locator)),
-           {:ok, elements} <- Map.fetch(resp, "value"),
-           elements <- Enum.map(elements, &(cast_as_element(parent, &1))),
-        do: {:ok, elements}
+    {time, ret} = :timer.tc fn ->
+      check_logs! parent, fn ->
+        with {:ok, resp} <- request(:post, parent.url <> "/elements", to_params(locator)),
+             {:ok, elements} <- Map.fetch(resp, "value"),
+             elements <- Enum.map(elements, &(cast_as_element(parent, &1))),
+          do: {:ok, elements}
+      end
     end
+    IO.puts "driver find_elements #{time / 1000}"
+    ret
   end
 
   @doc """
@@ -376,10 +380,14 @@ defmodule Wallaby.Phantom.Driver do
   end
 
   defp make_request(method, url, body) do
-    with {:ok, response} <- HTTPoison.request(method, url, body, headers(), request_opts()),
-         {:ok, decoded} <- Poison.decode(response.body),
-         {:ok, validated} <- check_for_response_errors(decoded),
-      do: {:ok, validated}
+    {time, ret} = :timer.tc fn ->
+      with {:ok, response} <- HTTPoison.request(method, url, body, headers(), request_opts()),
+           {:ok, decoded} <- Poison.decode(response.body),
+           {:ok, validated} <- check_for_response_errors(decoded),
+        do: {:ok, validated}
+    end
+    IO.puts "make_request of driver - #{time / 1000} -body: #{body}"
+    ret
   end
 
   defp make_request!(method, url, body) do

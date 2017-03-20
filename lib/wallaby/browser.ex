@@ -1059,7 +1059,7 @@ defmodule Wallaby.Browser do
       end
     end
     end
-    IO.puts "Execution time #{time / 1000}"
+    IO.puts "Browser.execute_query execution time #{time / 1000} ms"
     ret
   end
 

@@ -62,9 +62,13 @@ defmodule Wallaby.Element do
     fill_in(element, with: to_string(value))
   end
   def fill_in(element, with: value) when is_binary(value) do
-    element
-    |> clear
-    |> set_value(value)
+    {time, ret} = :timer.tc fn ->
+      element
+      |> clear
+      |> set_value(value)
+    end
+    IO.puts "Element.fill_in time: #{time / 1000} ms"
+    ret
   end
 
   @doc """
